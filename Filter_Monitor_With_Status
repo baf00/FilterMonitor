@@ -1,0 +1,165 @@
+//Sample using LiquidCrystal library
+#include <LiquidCrystal.h>
+
+/*******************************************************
+
+This program will test monitor the four water filters and
+report status on the LCD. When a dirty filter is reported
+the user can push filter check buttons to help debug the
+problem by seeing the pressure before each filter on the 
+LCD panel
+
+********************************************************/
+
+// select the pins used on the LCD panel
+LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+
+// define the values used by the panel and buttons
+int lcd_key     = 0;
+int adc_key_in  = 0;
+#define btnRIGHT  0
+#define btnUP     1
+#define btnDOWN   2
+#define btnLEFT   3
+#define btnSELECT 4
+#define btnNONE   5
+
+// define values used to read the pressure sensors
+int Filter1Pin = A1;
+int Filter2Pin = A2;
+int Filter3Pin = A3;
+int Filter4Pin = A4;
+float readingFilter1;         //the current filter pressure being read
+float readingFilter2;         //the current filter pressure being read
+float readingFilter3;         //the current filter pressure being read
+float readingFilter4;         //the current filter pressure being read
+
+
+// Routine to read the buttons and report back which button was pushed
+int read_LCD_buttons()
+{
+ adc_key_in = analogRead(0);      // read the value from the sensor 
+ // my buttons when read are centered at these valies: 0, 144, 329, 504, 741
+ // we add approx 50 to those values and check to see if we are close
+ if (adc_key_in > 1000) return btnNONE; // We make this the 1st option for speed reasons since it will be the most likely result
+ // For V1.1 us this threshold
+/*
+ if (adc_key_in < 50)   return btnRIGHT;  
+ if (adc_key_in < 250)  return btnUP; 
+ if (adc_key_in < 400)  return btnDOWN; 
+ if (adc_key_in < 650)  return btnLEFT; 
+ if (adc_key_in < 850)  return btnSELECT;  
+*/
+ // For V1.0 comment the other threshold and use the one below:
+
+ if (adc_key_in < 50)   return btnRIGHT;  //   0 -  49
+ if (adc_key_in < 195)  return btnUP;     //  50 - 194
+ if (adc_key_in < 380)  return btnDOWN;   // 195 - 379
+ if (adc_key_in < 555)  return btnLEFT;   // 380 - 554
+ if (adc_key_in < 790)  return btnSELECT; // 555 - 789 
+
+ return btnNONE;  // when all others fail, return this...
+}
+
+
+
+void setup()
+{
+ lcd.begin(16, 2);              // start the LCD library with a 16 character by 2 line LCD
+ lcd.setCursor(0,0);            // put the cursor in the top left corner 
+ lcd.print("Filter");           // Label the Display. Note the LCD has lines 0 and 1 and positions 0 through 15
+}
+ 
+void loop()
+{
+ lcd.setCursor(10,0);            // move cursor to second line "1" and 9 spaces over
+ lcd.print(millis()/60000);      // display minutes elapsed since power-up
+ lcd.print(" Mins");             // Print filter useage time
+
+
+ lcd.setCursor(0,1);            // move to the begining of the second line
+ lcd_key = read_LCD_buttons();  // read the buttons
+
+ switch (lcd_key)               // depending on which button was pushed, we perform an action
+ {
+   case btnRIGHT:
+     {
+     //lcd.print(adc_key_in); //debug for button read
+     //lcd.print(" v ");      //debug for button read
+     //lcd.print("RIGHT ");   //debug for button read
+     lcd.print("Filter 4 ");
+
+     break;
+     }
+   case btnLEFT:
+     {
+     //lcd.print(adc_key_in); //debug for button read
+     //lcd.print(" v ");      //debug for button read
+     //lcd.print("LEFT ");    //debug for button read
+     lcd.print("Filter 1 ");
+     break;
+     }
+   case btnUP:
+     {
+     //lcd.print(adc_key_in); //debug for button read
+     //lcd.print(" v ");      //debug for button read
+     //lcd.print("UP    ");   //debug for button read
+     lcd.print("Filter 2 ");
+
+     break;
+     }
+   case btnDOWN:
+     {
+     //lcd.print(adc_key_in); //debug for button read
+     //lcd.print(" v ");      //debug for button read
+     //lcd.print("DOWN  ");   //debug for button read
+     lcd.print("Filter 3 ");
+
+     break;
+     }
+   case btnSELECT:
+     {
+     //lcd.print(adc_key_in); //debug for button read
+     //lcd.print(" v ");      //debug for button read
+     lcd.print("SELECT");
+     break;
+     }
+     case btnNONE:
+     {
+      //lcd.print(adc_key_in); //debug for button read
+      //lcd.print(" v ");      //debug for button read
+      readingFilter1 = analogRead(Filter1Pin);   //read pressure filter 1
+      readingFilter2 = analogRead(Filter2Pin);   //read pressure filter 2
+      readingFilter3 = analogRead(Filter3Pin);   //read pressure filter 3
+      readingFilter4 = analogRead(Filter3Pin);   //read pressure filter 4
+       //     lcd.print("F1 ");
+       //     lcd.print(readingFilter1,0);
+      if ((readingFilter1) > 1000)
+          {
+           lcd.print(" Normal  ");
+          }
+      else if (readingFilter3  > 1000);   //check pressure filter 3
+          { 
+             //     lcd.print("F3 ");
+             //    lcd.print(readingFilter3,0);
+           lcd.print(" Check F3  ");
+          }
+       else if (readingFilter2  > 1000);   //check pressure filter 3
+          { 
+             //     lcd.print("F2 ");
+             //    lcd.print(readingFilter3,0);
+           lcd.print(" Check F2  ");
+          }    //    lcd.print("F2 ");
+       else if (readingFilter2  > 1000);   //check pressure filter 3
+          { 
+             //     lcd.print("F2 ");
+             //    lcd.print(readingFilter3,0);
+           lcd.print(" Check F2  ");
+          }    //    lcd.print("F2 ");
+
+
+
+     break;
+     }
+ }
+}
